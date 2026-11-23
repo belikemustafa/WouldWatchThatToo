@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WOULD WATCH THAT — API Client, Persistent Cache, Gemini Grounding & Trailers
+   WOULD WATCH THAT — API Client, Separate IMDb/Letterboxd Calibration & Sorter
    ========================================================================== */
 
 window.WWT_API = (() => {
@@ -52,7 +52,6 @@ window.WWT_API = (() => {
         JSON.stringify({ exp: Date.now() + ttl, data })
       );
     } catch {
-      // If storage quota is full, clear older cache entries gracefully
       clearCache();
     }
   }
@@ -65,48 +64,117 @@ window.WWT_API = (() => {
     });
   }
 
-  /* ---------- Rating Estimators & Formatters ---------- */
-  // Provides consistent IMDb (/10) and Letterboxd (/5) display values on grid cards,
-  // upgraded with verified Search-grounded ratings when a Gemini key is configured.
+  /* ---------- Distinct IMDb vs Letterboxd Rating Calibration ---------- */
+  // Strictly treats 0-vote or unrated titles as null so they NEVER leak into rating sorts.
   function enrichMediaItem(item, forcedType) {
     const mediaType = forcedType || item.media_type || (item.first_air_date ? 'tv' : 'movie');
     const title = item.title || item.name || 'Untitled';
     const date = item.release_date || item.first_air_date || '';
     const year = date ? date.slice(0, 4) : '—';
     const rawVote = Number(item.vote_average || 0);
+    const voteCount = Number(item.vote_count || 0);
+    const hasReliableRating = rawVote > 0 && voteCount >= 20;
 
-    // Calibrated baseline scores from TMDB vote_average when external lookup hasn't run yet
-    const imdbEst = rawVote > 0 ? Number(Math.min(9.6, rawVote).toFixed(1)) : null;
-    const lbEst = rawVote > 0 ? Number(Math.min(4.7, Math.max(1.2, (rawVote / 2) - 0.05)).toFixed(1)) : null;
+    // Check if we already have Gemini-verified scores cached for this title
+    const verifiedCache = readCache(`verify_${mediaType}_${title}_${year}`);
+
+    let imdbScore = verifiedCache?.imdb ?? null;
+    let letterboxdScore = verifiedCache?.letterboxd ?? null;
+
+    if (hasReliableRating) {
+      // IMDb Bayesian weighting: rewards broad audience volume + high consensus
+      if (imdbScore === null) {
+        const m = 450;
+        const prior = 6.6;
+        const weighted = (voteCount / (voteCount + m)) * rawVote + (m / (voteCount + m)) * prior;
+        imdbScore = Number(Math.min(9.5, Math.max(1.5, weighted + 0.15)).toFixed(1));
+      }
+
+      // Letterboxd cinephile calibration: distinct weighting for auteur/prestige/world cinema
+      if (letterboxdScore === null) {
+        const genreIds = item.genre_ids || (item.genres || []).map((g) => g.id);
+        const prestigeLift =
+          (CFG.KNOWN_AWARDS[item.id] ? 0.22 : 0) +
+          (item.original_language && item.original_language !== 'en' ? 0.14 : 0) +
+          (genreIds.includes(18) || genreIds.includes(9648) || genreIds.includes(36) ? 0.08 : 0) -
+          (genreIds.includes(28) && rawVote < 7.2 ? 0.12 : 0);
+        const baseLb = (rawVote / 2) - 0.12 + prestigeLift;
+        letterboxdScore = Number(Math.min(4.7, Math.max(1.0, baseLb)).toFixed(1));
+      }
+    }
 
     return {
       ...item,
       media_type: mediaType,
       displayTitle: title,
       displayYear: year,
+      releaseTimestamp: date ? Date.parse(date) || 0 : 0,
       posterUrl: item.poster_path ? `${CFG.TMDB_IMG_BASE}w500${item.poster_path}` : '',
       backdropUrl: item.backdrop_path ? `${CFG.TMDB_IMG_BASE}w1280${item.backdrop_path}` : '',
-      imdbScore: item.imdbScore || imdbEst,
-      letterboxdScore: item.letterboxdScore || lbEst,
-      awardBadge: item.awardBadge || CFG.KNOWN_AWARDS[item.id] || ''
+      voteCount,
+      imdbScore,
+      letterboxdScore,
+      hasImdb: typeof imdbScore === 'number' && imdbScore > 0,
+      hasLetterboxd: typeof letterboxdScore === 'number' && letterboxdScore > 0,
+      awardBadge: verifiedCache?.awardsSummary || item.awardBadge || CFG.KNOWN_AWARDS[item.id] || ''
     };
+  }
+
+  /* ---------- Universal Proper Sorter (Excludes Unrated on Rating Sorts) ---------- */
+  function sortAndSanitize(items, sortMode) {
+    let list = [...items];
+
+    if (sortMode === 'imdb.desc' || sortMode === 'imdb.asc') {
+      // Strictly drop movies/shows with no IMDb rating
+      list = list.filter((i) => i.hasImdb);
+      return list.sort((a, b) =>
+        sortMode === 'imdb.desc'
+          ? b.imdbScore - a.imdbScore || b.voteCount - a.voteCount
+          : a.imdbScore - b.imdbScore || b.voteCount - a.voteCount
+      );
+    }
+
+    if (sortMode === 'letterboxd.desc' || sortMode === 'letterboxd.asc') {
+      // Strictly drop movies/shows with no Letterboxd rating
+      list = list.filter((i) => i.hasLetterboxd);
+      return list.sort((a, b) =>
+        sortMode === 'letterboxd.desc'
+          ? b.letterboxdScore - a.letterboxdScore || b.voteCount - a.voteCount
+          : a.letterboxdScore - b.letterboxdScore || b.voteCount - a.voteCount
+      );
+    }
+
+    if (sortMode === 'release.desc') {
+      return list.sort((a, b) => (b.releaseTimestamp || 0) - (a.releaseTimestamp || 0));
+    }
+
+    if (sortMode === 'release.asc') {
+      return list.sort((a, b) => {
+        const ta = a.releaseTimestamp || Number.MAX_SAFE_INTEGER;
+        const tb = b.releaseTimestamp || Number.MAX_SAFE_INTEGER;
+        return ta - tb;
+      });
+    }
+
+    if (sortMode === 'title.asc') {
+      return list.sort((a, b) => a.displayTitle.localeCompare(b.displayTitle));
+    }
+
+    // Editorial popularity
+    return list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   }
 
   /* ---------- TMDB Request Wrapper ---------- */
   async function tmdbFetch(path, params = {}, skipCache = false) {
     const apiKey = getTmdbKey();
-    if (!apiKey) {
-      throw new Error('NO_TMDB_KEY');
-    }
+    if (!apiKey) throw new Error('NO_TMDB_KEY');
 
     const url = new URL(`${CFG.TMDB_BASE_URL}${path}`);
     url.searchParams.set('api_key', apiKey);
     url.searchParams.set('language', 'en-US');
 
     Object.entries(params).forEach(([k, v]) => {
-      if (v !== '' && v !== null && v !== undefined) {
-        url.searchParams.set(k, String(v));
-      }
+      if (v !== '' && v !== null && v !== undefined) url.searchParams.set(k, String(v));
     });
 
     const cacheKey = `${path}?${url.searchParams.toString().replace(apiKey, 'KEY')}`;
@@ -116,27 +184,21 @@ window.WWT_API = (() => {
     }
 
     const res = await fetch(url.toString());
-    if (!res.ok) {
-      throw new Error(`TMDB Error ${res.status}`);
-    }
+    if (!res.ok) throw new Error(`TMDB Error ${res.status}`);
     const data = await res.json();
     writeCache(cacheKey, data);
     return data;
   }
 
   async function fetchByIds(ids, mediaType = 'movie') {
-    const settled = await Promise.allSettled(
-      ids.map((id) => tmdbFetch(`/${mediaType}/${id}`))
-    );
+    const settled = await Promise.allSettled(ids.map((id) => tmdbFetch(`/${mediaType}/${id}`)));
     return settled
       .filter((r) => r.status === 'fulfilled' && r.value?.id)
       .map((r) => enrichMediaItem(r.value, mediaType));
   }
 
   async function fetchCollection(collection) {
-    if (collection.type === 'ids') {
-      return fetchByIds(collection.ids, collection.mediaType);
-    }
+    if (collection.type === 'ids') return fetchByIds(collection.ids, collection.mediaType);
     if (collection.type === 'endpoint') {
       const data = await tmdbFetch(collection.endpoint);
       return (data.results || []).slice(0, 14).map((i) => enrichMediaItem(i, collection.mediaType));
@@ -147,11 +209,10 @@ window.WWT_API = (() => {
 
   async function fetchHeroSpotlight() {
     const trending = await tmdbFetch('/trending/all/week');
-    const candidates = (trending.results || [])
+    return (trending.results || [])
       .filter((i) => (i.media_type === 'movie' || i.media_type === 'tv') && i.backdrop_path)
       .slice(0, 6)
       .map((i) => enrichMediaItem(i));
-    return candidates;
   }
 
   async function fetchDetails(mediaType, id) {
@@ -181,65 +242,65 @@ window.WWT_API = (() => {
     return (data.results || []).slice(0, 6);
   }
 
-  /* ---------- 9-Box Filter Studio Query Builder ---------- */
+  /* ---------- Filter Studio Discovery Engine ---------- */
   async function discoverWithFilters(filters, page = 1) {
-    // Handle curated Awards pools directly when an awards preset is chosen without conflicting formats
+    const isRatingSort = ['imdb.desc', 'imdb.asc', 'letterboxd.desc', 'letterboxd.asc'].includes(filters.sort);
+
+    // Curated Awards pools
     if (filters.awards && filters.awards !== 'all' && page === 1 && filters.format === 'movie') {
       const poolIds = CFG.PRESTIGE_IDS[filters.awards] || [];
       let items = await fetchByIds(poolIds, 'movie');
+      items = applyLocalScoreFilters(items, filters);
 
-      // Apply client-side refinement for cast/director/era/rating/genre on prestige pools
-      items = items.filter((item) => {
-        if (filters.minImdb && (item.imdbScore || 0) < filters.minImdb) return false;
-        if (filters.minLetterboxd && (item.letterboxdScore || 0) < filters.minLetterboxd) return false;
-        if (filters.language && item.original_language !== filters.language) return false;
-        if (filters.yearFrom && Number(item.displayYear) < Number(filters.yearFrom)) return false;
-        if (filters.yearTo && Number(item.displayYear) > Number(filters.yearTo)) return false;
-        if (filters.genres.length) {
-          const ids = (item.genres || []).map((g) => g.id);
-          if (!filters.genres.every((gId) => ids.includes(gId))) return false;
-        }
-        return true;
-      });
-
-      // Verify cast/director on prestige items if selected
       if (filters.cast.length || filters.directors.length) {
         const detailed = await Promise.all(items.map((it) => fetchDetails('movie', it.id)));
         items = detailed.filter((d) => {
           const castIds = (d.credits?.cast || []).map((c) => c.id);
-          const dirIds = (d.credits?.crew || [])
-            .filter((c) => c.job === 'Director')
-            .map((c) => c.id);
-          const castOk = filters.cast.every((p) => castIds.includes(p.id));
-          const dirOk = filters.directors.every((p) => dirIds.includes(p.id));
-          return castOk && dirOk;
+          const dirIds = (d.credits?.crew || []).filter((c) => c.job === 'Director').map((c) => c.id);
+          return (
+            filters.cast.every((p) => castIds.includes(p.id)) &&
+            filters.directors.every((p) => dirIds.includes(p.id))
+          );
         });
       }
 
-      return { results: sortItems(items, filters.sort), total_pages: 1, total_results: items.length };
+      const sorted = sortAndSanitize(items, filters.sort);
+      return { results: sorted, total_pages: 1, total_results: sorted.length };
     }
 
     const isTv = filters.format === 'tv';
     const mediaType = isTv ? 'tv' : 'movie';
     const params = {
       page,
-      include_adult: false,
-      'vote_count.gte': filters.minImdb >= 7 ? 250 : 60
+      include_adult: false
     };
 
-    // Map UI sort to TMDB discover sort
+    // Proper TMDB server-side sort mapping + strict vote_count floor on rating sorts
     if (filters.sort === 'imdb.desc' || filters.sort === 'letterboxd.desc') {
       params.sort_by = 'vote_average.desc';
-      params['vote_count.gte'] = 400;
-    } else if (filters.sort === 'primary_release_date.desc') {
+      params['vote_count.gte'] = isTv ? 180 : 350;
+      params['vote_average.gte'] = 0.5;
+    } else if (filters.sort === 'imdb.asc' || filters.sort === 'letterboxd.asc') {
+      params.sort_by = 'vote_average.asc';
+      params['vote_count.gte'] = isTv ? 120 : 250;
+      params['vote_average.gte'] = 0.5;
+    } else if (filters.sort === 'release.desc') {
       params.sort_by = isTv ? 'first_air_date.desc' : 'primary_release_date.desc';
-    } else if (filters.sort === 'primary_release_date.asc') {
+      params[isTv ? 'first_air_date.lte' : 'primary_release_date.lte'] = new Date().toISOString().slice(0, 10);
+      params['vote_count.gte'] = 10;
+    } else if (filters.sort === 'release.asc') {
       params.sort_by = isTv ? 'first_air_date.asc' : 'primary_release_date.asc';
+      params[isTv ? 'first_air_date.gte' : 'primary_release_date.gte'] = '1920-01-01';
+      params['vote_count.gte'] = 25;
+    } else if (filters.sort === 'title.asc') {
+      params.sort_by = isTv ? 'name.asc' : 'original_title.asc';
+      params['vote_count.gte'] = 30;
     } else {
       params.sort_by = 'popularity.desc';
+      params['vote_count.gte'] = filters.minImdb > 0 || filters.minLetterboxd > 0 ? 50 : 10;
     }
 
-    // Format presets (Anime / Documentary)
+    // Genres & Format
     const genreIds = new Set(
       filters.genres.map((gId) => {
         if (!isTv) return gId;
@@ -253,29 +314,31 @@ window.WWT_API = (() => {
     } else if (filters.format === 'documentary') {
       genreIds.add(99);
     }
-
     if (genreIds.size) params.with_genres = [...genreIds].join(',');
     if (filters.language) params.with_original_language = filters.language;
 
-    // Ratings thresholds
-    const minScore = Math.max(
-      Number(filters.minImdb || 0),
-      filters.minLetterboxd ? Number(filters.minLetterboxd) * 2 : 0
+    // Separate IMDb & Letterboxd minimum thresholds passed down to TMDB as baseline
+    const minTmdbFloor = Math.max(
+      filters.minImdb > 0 ? Math.max(0, filters.minImdb - 0.3) : 0,
+      filters.minLetterboxd > 0 ? Math.max(0, filters.minLetterboxd * 2 - 0.4) : 0
     );
-    if (minScore > 0) params['vote_average.gte'] = minScore.toFixed(1);
+    if (minTmdbFloor > 0) {
+      params['vote_average.gte'] = minTmdbFloor.toFixed(1);
+      params['vote_count.gte'] = Math.max(params['vote_count.gte'] || 0, 35);
+    }
 
     // Cast & Directors
     if (!isTv) {
       if (filters.cast.length) params.with_cast = filters.cast.map((p) => p.id).join(',');
       if (filters.directors.length) params.with_crew = filters.directors.map((p) => p.id).join(',');
     } else if (filters.cast.length || filters.directors.length) {
-      // TV discover doesn't support with_cast natively; fetch via person combined_credits
       const personId = (filters.cast[0] || filters.directors[0]).id;
       const credits = await tmdbFetch(`/person/${personId}/tv_credits`);
-      const list = [...(credits.cast || []), ...(credits.crew || [])]
+      let list = [...(credits.cast || []), ...(credits.crew || [])]
         .filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx)
         .map((i) => enrichMediaItem(i, 'tv'));
-      return { results: sortItems(list, filters.sort), total_pages: 1, total_results: list.length };
+      list = sortAndSanitize(applyLocalScoreFilters(list, filters), filters.sort);
+      return { results: list, total_pages: 1, total_results: list.length };
     }
 
     // Studios & Networks
@@ -284,42 +347,52 @@ window.WWT_API = (() => {
     if (companies.length) params.with_companies = companies.join('|');
     if (networks.length && isTv) params.with_networks = networks.join('|');
 
-    // Era / Year range
-    if (filters.yearFrom) {
-      params[isTv ? 'first_air_date.gte' : 'primary_release_date.gte'] = `${filters.yearFrom}-01-01`;
-    }
-    if (filters.yearTo) {
-      params[isTv ? 'first_air_date.lte' : 'primary_release_date.lte'] = `${filters.yearTo}-12-31`;
-    }
+    // Era / Year
+    if (filters.yearFrom) params[isTv ? 'first_air_date.gte' : 'primary_release_date.gte'] = `${filters.yearFrom}-01-01`;
+    if (filters.yearTo) params[isTv ? 'first_air_date.lte' : 'primary_release_date.lte'] = `${filters.yearTo}-12-31`;
 
     // Runtime & Streaming
-    if (filters.maxRuntime && filters.maxRuntime < 240) {
-      params['with_runtime.lte'] = filters.maxRuntime;
-    }
+    if (filters.maxRuntime && filters.maxRuntime < 240) params['with_runtime.lte'] = filters.maxRuntime;
     if (filters.providers.length) {
       params.with_watch_providers = filters.providers.join('|');
       params.watch_region = 'US';
     }
 
-    const data = await tmdbFetch(`/discover/${mediaType}`, params);
-    const results = (data.results || []).map((i) => enrichMediaItem(i, mediaType));
+    let data = await tmdbFetch(`/discover/${mediaType}`, params);
+
+    // Smart fallback for niche filters (e.g. regional cinema + high rating sort): relax vote_count floor from 350 → 25, still keeping unrated titles excluded
+    if (isRatingSort && (data.results || []).length < 5 && (params['vote_count.gte'] || 0) > 25) {
+      params['vote_count.gte'] = 25;
+      data = await tmdbFetch(`/discover/${mediaType}`, params);
+    }
+
+    let results = (data.results || []).map((i) => enrichMediaItem(i, mediaType));
+    results = applyLocalScoreFilters(results, filters);
+    results = sortAndSanitize(results, filters.sort);
+
     return {
-      results: sortItems(results, filters.sort),
+      results,
       total_pages: Math.min(data.total_pages || 1, 20),
       total_results: data.total_results || results.length
     };
   }
 
-  function sortItems(items, sortMode) {
-    const copy = [...items];
-    if (sortMode === 'imdb.desc') return copy.sort((a, b) => (b.imdbScore || 0) - (a.imdbScore || 0));
-    if (sortMode === 'letterboxd.desc') return copy.sort((a, b) => (b.letterboxdScore || 0) - (a.letterboxdScore || 0));
-    if (sortMode === 'primary_release_date.desc') return copy.sort((a, b) => Number(b.displayYear || 0) - Number(a.displayYear || 0));
-    if (sortMode === 'primary_release_date.asc') return copy.sort((a, b) => Number(a.displayYear || 9999) - Number(b.displayYear || 9999));
-    return copy;
+  function applyLocalScoreFilters(items, filters) {
+    return items.filter((item) => {
+      if (filters.minImdb > 0 && (!item.hasImdb || item.imdbScore < filters.minImdb)) return false;
+      if (filters.minLetterboxd > 0 && (!item.hasLetterboxd || item.letterboxdScore < filters.minLetterboxd)) return false;
+      if (filters.language && item.original_language !== filters.language) return false;
+      if (filters.yearFrom && Number(item.displayYear) < Number(filters.yearFrom)) return false;
+      if (filters.yearTo && Number(item.displayYear) > Number(filters.yearTo)) return false;
+      if (filters.genres.length && item.genres) {
+        const ids = item.genres.map((g) => g.id);
+        if (!filters.genres.every((gId) => ids.includes(gId))) return false;
+      }
+      return true;
+    });
   }
 
-  /* ---------- Google Gemini Search Grounding (AI Discovery & Verified Awards) ---------- */
+  /* ---------- Google Gemini Search Grounding ---------- */
   async function geminiGroundedJson(promptText, cacheKey) {
     const geminiKey = getGeminiKey();
     if (!geminiKey) return null;
@@ -330,16 +403,14 @@ window.WWT_API = (() => {
     }
 
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${CFG.GEMINI_MODEL}:generateContent?key=${encodeURIComponent(geminiKey)}`;
-    const body = {
-      contents: [{ role: 'user', parts: [{ text: promptText }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { temperature: 0.2 }
-    };
-
     const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: promptText }] }],
+        tools: [{ google_search: {} }],
+        generationConfig: { temperature: 0.2 }
+      })
     });
 
     if (!res.ok) return null;
@@ -395,16 +466,10 @@ Return ONLY JSON: {"imdb": number|null, "letterboxd": number|null, "awardsSummar
   function extractYouTubeVideos(details) {
     const list = details?.videos?.results || [];
     const yt = list.filter((v) => v.site === 'YouTube' && v.key);
-    const rank = (v) => {
-      if (v.type === 'Trailer' && v.official) return 0;
-      if (v.type === 'Trailer') return 1;
-      if (v.type === 'Teaser') return 2;
-      return 3;
-    };
+    const rank = (v) => (v.type === 'Trailer' && v.official ? 0 : v.type === 'Trailer' ? 1 : v.type === 'Teaser' ? 2 : 3);
     return yt.sort((a, b) => rank(a) - rank(b));
   }
 
-  // Fixes YouTube Error 153 by using youtube-nocookie.com + strict-origin-when-cross-origin referrer policy
   function buildSafeTrailerIframe(youtubeKey, title) {
     const iframe = document.createElement('iframe');
     iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeKey)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
@@ -420,6 +485,7 @@ Return ONLY JSON: {"imdb": number|null, "letterboxd": number|null, "awardsSummar
     getGeminiKey,
     hasTmdbKey,
     clearCache,
+    sortAndSanitize,
     fetchCollection,
     fetchHeroSpotlight,
     fetchDetails,
