@@ -1,43 +1,42 @@
 /* ==========================================================================
-   WOULD WATCH THAT — Configuration, Presets & Theme Catalog
+   WOULD WATCH THAT — Configuration, Formal Palette & Curated Archive
    ========================================================================== */
 
 window.WWT_CONFIG = {
-  // Optional hidden/default keys (Base64 encoded or plain string).
-  // Users can always override these privately inside the Studio Settings Drawer.
-  DEFAULT_TMDB_API_KEY: '', // Paste your TMDB v3 API key here if hosting privately
-  DEFAULT_GEMINI_API_KEY: '', // Optional: Gemini API key for AI Discover & verified awards
+  // Optional built-in keys (can always be overridden privately in Studio Settings)
+  DEFAULT_TMDB_API_KEY: '',
+  DEFAULT_GEMINI_API_KEY: '',
   GEMINI_MODEL: 'gemini-2.5-flash',
 
   TMDB_BASE_URL: 'https://api.themoviedb.org/3',
   TMDB_IMG_BASE: 'https://image.tmdb.org/t/p/',
-  CACHE_TTL_MS: 1000 * 60 * 60 * 12, // 12 hours persistent cache
+  CACHE_TTL_MS: 1000 * 60 * 60 * 12,
 
   STORAGE_KEYS: {
     TMDB_KEY: 'wwt_override_tmdb_key',
     GEMINI_KEY: 'wwt_override_gemini_key',
     THEME: 'wwt_theme',
     ACCENT: 'wwt_accent',
-    USERS: 'wwt_users_v1',
-    ACTIVE_USER: 'wwt_active_user_v1',
+    USERS: 'wwt_users_v2',
+    ACTIVE_USER: 'wwt_active_user_v2',
     WATCHLIST_PREFIX: 'wwt_watchlist_',
-    CACHE_PREFIX: 'wwt_cache_v1_'
+    CACHE_PREFIX: 'wwt_cache_v2_'
   },
 
+  // 3 Refined Dark Surfaces
   THEMES: [
-    { id: 'abyssal-carbon', name: 'Abyssal Carbon', swatch: '#0c0e11' },
-    { id: 'midnight-slate', name: 'Midnight Slate', swatch: '#162130' },
-    { id: 'pure-obsidian', name: 'Pure Obsidian', swatch: '#000000' },
-    { id: 'matinee-ivory', name: 'Matinee Ivory', swatch: '#f5f1e8' }
+    { id: 'abyssal-carbon', name: 'Abyssal Carbon', swatch: '#0a0c0f' },
+    { id: 'midnight-slate', name: 'Midnight Slate', swatch: '#0f1826' },
+    { id: 'pure-obsidian', name: 'Pure Obsidian', swatch: '#000000' }
   ],
 
+  // 5 Focused Formal Accents: Royal Gold, Silver Nitrate, Deep Teal + 2 Dark Formal Shades
   ACCENTS: [
-    { id: 'royal-gold', name: 'Royal Gold', swatch: '#d4af37' },
-    { id: 'silver-nitrate', name: 'Silver Nitrate', swatch: '#c8d0d8' },
-    { id: 'deep-teal', name: 'Deep Teal', swatch: '#22a09a' },
-    { id: 'deep-burgundy', name: 'Deep Burgundy', swatch: '#a6344c' },
-    { id: 'midnight-indigo', name: 'Midnight Indigo', swatch: '#5e72c7' },
-    { id: 'deep-forest', name: 'Deep Forest', swatch: '#32936f' }
+    { id: 'royal-gold', name: 'Royal Gold', swatch: '#c9a23f' },
+    { id: 'silver-nitrate', name: 'Silver Nitrate', swatch: '#bfc7d1' },
+    { id: 'deep-teal', name: 'Deep Teal', swatch: '#1e8f8a' },
+    { id: 'oxblood-noir', name: 'Oxblood Noir', swatch: '#8f2d3e' },
+    { id: 'midnight-pine', name: 'Midnight Pine', swatch: '#246b56' }
   ],
 
   GENRES: [
@@ -81,7 +80,6 @@ window.WWT_CONFIG = {
     { id: 174, name: 'Warner Bros.' },
     { id: 33, name: 'Universal' },
     { id: 9996, name: 'Syncopy' },
-    { id: 10146, name: 'Bad Robot' },
     { id: 49, name: 'HBO', isNetwork: true }
   ],
 
@@ -96,7 +94,6 @@ window.WWT_CONFIG = {
     { id: '2020s', label: '2020s', from: 2020, to: 2026 }
   ],
 
-  // Curated verified prestige pools (TMDB IDs) so Awards filter works instantaneously
   AWARDS_PRESETS: [
     { id: 'all', label: 'All Titles' },
     { id: 'oscar_bp', label: 'Oscar Best Picture' },
@@ -112,7 +109,6 @@ window.WWT_CONFIG = {
     festival: [530915, 666277, 843527, 419430, 508442, 603, 1124, 278, 389, 129, 372058]
   },
 
-  // Badge lookup for verified winners displayed directly on posters & detail modals
   KNOWN_AWARDS: {
     872585: '7× Academy Awards · Best Picture',
     545611: '7× Academy Awards · Best Picture',
@@ -128,7 +124,7 @@ window.WWT_CONFIG = {
     157336: 'Academy Award · Visual Effects',
     244786: '3× Academy Awards',
     313369: '6× Academy Awards',
-    129: 'Academy Award · Best Animated Feature',
+    129: 'Academy Award · Animated Feature',
     915935: 'Palme d’Or · Academy Award',
     1064213: 'Palme d’Or · Best Picture',
     680: 'Palme d’Or · Academy Award',
@@ -167,7 +163,7 @@ window.WWT_CONFIG = {
     {
       id: 'acclaimed_series',
       eyebrow: 'PRESTIGE TELEVISION',
-      title: 'Acclaimed Limited & Drama Series',
+      title: 'Acclaimed Drama & Limited Series',
       type: 'endpoint',
       mediaType: 'tv',
       endpoint: '/tv/top_rated'
