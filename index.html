@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="abyssal-carbon" data-accent="royal-gold">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>Would Watch That — Curated Cinema &amp; Series Discovery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Top Editorial Navigation -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#home" class="brand-lockup" id="brandHomeBtn" aria-label="Would Watch That Home">
+        <span class="brand-monogram" aria-hidden="true">
+          <svg viewBox="0 0 110 42" width="84" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="106" height="38" stroke="currentColor" stroke-width="1.5" />
+            <rect x="6" y="6" width="98" height="30" stroke="currentColor" stroke-width="0.75" opacity="0.65" />
+            <path d="M2 10 L10 2 M108 10 L100 2 M2 32 L10 40 M108 32 L100 40" stroke="currentColor" stroke-width="1.2" />
+            <text x="55" y="27" text-anchor="middle" fill="currentColor" font-family="Playfair Display, Georgia, serif" font-size="16" font-weight="700" letter-spacing="3.5">W·W·T</text>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">WOULD WATCH THAT</span>
+          <span class="brand-subtitle">CURATED CINEMA ARCHIVE</span>
+        </span>
+      </a>
+
+      <nav class="main-nav" aria-label="Primary Navigation">
+        <button class="nav-btn active" data-view="home">Home</button>
+        <button class="nav-btn" data-view="discover">Filter Studio</button>
+        <button class="nav-btn" data-view="watchlist">
+          Watchlist <span class="badge-pill" id="watchlistCountBadge">0</span>
+        </button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" id="openSettingsBtn" title="Appearance & API Settings" aria-label="Settings">
+          <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+        <button class="btn-outline btn-sm" id="authTriggerBtn">Sign In</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- API Key Setup Notice (auto-hides once TMDB key is configured) -->
+  <div class="api-banner hidden" id="apiSetupBanner">
+    <div class="api-banner-inner">
+      <span>Connect your <strong>TMDB API Key</strong> (and optional Gemini key for AI search &amp; verified awards) to unlock the full live catalog.</span>
+      <button class="btn-accent btn-sm" id="bannerOpenSettingsBtn">Configure API Keys</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main-shell">
+    <!-- Natural-Language & Title Search Bar -->
+    <section class="search-bar-section">
+      <form id="conciergeSearchForm" class="concierge-form" autocomplete="off">
+        <div class="concierge-input-wrap">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            id="conciergeInput"
+            placeholder="Search a title, actor, or describe a mood (e.g. 'Oscar-winning Leonardo DiCaprio dramas' or 'rainy Neo-Noir under 2h')..."
+          />
+          <button type="button" class="clear-search-btn hidden" id="clearSearchBtn" aria-label="Clear search">&times;</button>
+        </div>
+        <div class="concierge-actions">
+          <button type="submit" class="btn-accent">Search</button>
+          <button type="button" class="btn-outline" id="aiConciergeBtn" title="Use Gemini with Google Search Grounding">
+            ✦ AI Discover
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- VIEW: HOME -->
+    <div id="homeView" class="view-section active">
+      <!-- Flagship Hero Spotlight Carousel -->
+      <section class="hero-spotlight" aria-label="Flagship Spotlight">
+        <div class="hero-track" id="heroTrack">
+          <div class="hero-skeleton">Loading Spotlight Cinema...</div>
+        </div>
+        <div class="hero-controls">
+          <button class="hero-arrow" id="heroPrevBtn" aria-label="Previous Spotlight">&#8592;</button>
+          <div class="hero-dots" id="heroDots"></div>
+          <button class="hero-arrow" id="heroNextBtn" aria-label="Next Spotlight">&#8594;</button>
+        </div>
+      </section>
+
+      <!-- Curated Editorial Collections -->
+      <section class="collections-wrapper" id="collectionsContainer"></section>
+    </div>
+
+    <!-- VIEW: FILTER STUDIO / DISCOVER -->
+    <div id="discoverView" class="view-section">
+      <div class="section-header-bar">
+        <div>
+          <p class="eyebrow">PRECISION DISCOVERY</p>
+          <h1 class="editorial-heading">The 9-Box Filter Studio</h1>
+        </div>
+        <div class="studio-toolbar">
+          <button class="btn-outline btn-sm" id="toggleFilterGridBtn">Collapse Filters</button>
+          <button class="btn-ghost btn-sm" id="resetAllFiltersBtn">Reset All</button>
+          <button class="btn-accent btn-sm" id="applyFiltersBtn">Apply Filters</button>
+        </div>
+      </div>
+
+      <!-- 9 Structured Drop-Box Filters -->
+      <div class="filter-studio-grid" id="filterStudioGrid">
+        <!-- 1. Format & Style -->
+        <details class="filter-dropbox" open>
+          <summary>
+            <span class="dropbox-title"><span class="box-num">01</span> Format &amp; Style</span>
+            <span class="dropbox-badge" id="badge-format">All</span>
+          </summary>
+          <div class="dropbox-body">
+            <div class="pill-group" id="formatPills">
+              <button type="button" class="chip active" data-format="movie">Movies</button>
+              <button type="button" class="chip" data-format="tv">TV Series</button>
+              <button type="button" class="chip" data-format="anime">Anime</button>
+              <button type="button" class="chip" data-format="documentary">Documentary</button>
+            </div>
+          </div>
+        </details>
+
+        <!-- 2. Genre -->
+        <details class="filter-dropbox" open>
+          <summary>
+            <span class="dropbox-title"><span class="box-num">02</span> Genre</span>
+            <span class="dropbox-badge" id="badge-genre">Any</span>
+          </summary>
+          <div class="dropbox-body">
+            <div class="pill-group scrollable-chips" id="genrePills"></div>
+          </div>
+        </details>
+
+        <!-- 3. Ratings & Language -->
+        <details class="filter-dropbox" open>
+          <summary>
+            <span class="dropbox-title"><span class="box-num">03</span> Ratings &amp; Language</span>
+            <span class="dropbox-badge" id="badge-rating">Any</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <label class="field-row">
+              <span>Min IMDb Rating: <strong id="minImdbVal">Any</strong></span>
+              <input type="range" id="minImdbRange" min="0" max="9" step="0.5" value="0" />
+            </label>
+            <label class="field-row">
+              <span>Min Letterboxd: <strong id="minLbVal">Any</strong></span>
+              <input type="range" id="minLbRange" min="0" max="4.6" step="0.2" value="0" />
+            </label>
+            <label class="field-row">
+              <span>Original Language</span>
+              <select id="languageSelect"></select>
+            </label>
+          </div>
+        </details>
+
+        <!-- 4. Cast & Stars -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">04</span> Cast &amp; Stars</span>
+            <span class="dropbox-badge" id="badge-cast">Any</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <div class="autocomplete-wrap">
+              <input type="text" id="castSearchInput" placeholder="Type actor name (e.g. Leonardo DiCaprio)..." />
+              <div class="autocomplete-menu hidden" id="castSuggestions"></div>
+            </div>
+            <div class="selected-tags" id="selectedCastTags"></div>
+          </div>
+        </details>
+
+        <!-- 5. Directors & Creators -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">05</span> Directors &amp; Creators</span>
+            <span class="dropbox-badge" id="badge-director">Any</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <div class="autocomplete-wrap">
+              <input type="text" id="directorSearchInput" placeholder="Type director (e.g. Christopher Nolan)..." />
+              <div class="autocomplete-menu hidden" id="directorSuggestions"></div>
+            </div>
+            <div class="selected-tags" id="selectedDirectorTags"></div>
+          </div>
+        </details>
+
+        <!-- 6. Studios & Networks -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">06</span> Studios &amp; Networks</span>
+            <span class="dropbox-badge" id="badge-studio">Any</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <div class="pill-group" id="studioPresets"></div>
+            <div class="autocomplete-wrap">
+              <input type="text" id="studioSearchInput" placeholder="Search studio or network..." />
+              <div class="autocomplete-menu hidden" id="studioSuggestions"></div>
+            </div>
+            <div class="selected-tags" id="selectedStudioTags"></div>
+          </div>
+        </details>
+
+        <!-- 7. Release Era & Year -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">07</span> Release Era &amp; Year</span>
+            <span class="dropbox-badge" id="badge-era">All Eras</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <div class="pill-group" id="eraPresets"></div>
+            <div class="year-range-row">
+              <input type="number" id="yearFromInput" placeholder="From (e.g. 1990)" min="1900" max="2030" />
+              <span>to</span>
+              <input type="number" id="yearToInput" placeholder="To (e.g. 2026)" min="1900" max="2030" />
+            </div>
+          </div>
+        </details>
+
+        <!-- 8. Awards & Prestige -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">08</span> Awards &amp; Prestige</span>
+            <span class="dropbox-badge" id="badge-awards">All</span>
+          </summary>
+          <div class="dropbox-body">
+            <div class="pill-group" id="awardsPills"></div>
+            <p class="helper-note">Verified via curated prestige lists &amp; Gemini Search Grounding when enabled.</p>
+          </div>
+        </details>
+
+        <!-- 9. Runtime & Streaming -->
+        <details class="filter-dropbox">
+          <summary>
+            <span class="dropbox-title"><span class="box-num">09</span> Runtime &amp; Streaming</span>
+            <span class="dropbox-badge" id="badge-runtime">Any</span>
+          </summary>
+          <div class="dropbox-body form-stack">
+            <label class="field-row">
+              <span>Max Runtime: <strong id="maxRuntimeVal">Any</strong></span>
+              <input type="range" id="maxRuntimeRange" min="60" max="240" step="15" value="240" />
+            </label>
+            <div class="pill-group" id="streamingPills"></div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Results Header & Sort Controls -->
+      <div class="results-toolbar">
+        <div class="results-meta" id="resultsMeta">Explore films and series using the studio above.</div>
+        <div class="sort-controls">
+          <label for="sortSelect">Sort by</label>
+          <select id="sortSelect">
+            <option value="popularity.desc">Editorial Popularity</option>
+            <option value="imdb.desc">IMDb Rating (High → Low)</option>
+            <option value="letterboxd.desc">Letterboxd Rating (High → Low)</option>
+            <option value="primary_release_date.desc">Newest Release</option>
+            <option value="primary_release_date.asc">Classic First</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Discovery Grid -->
+      <div class="media-grid" id="discoverGrid"></div>
+
+      <div class="pagination-bar hidden" id="paginationBar">
+        <button class="btn-outline" id="loadMoreBtn">Load More Titles</button>
+      </div>
+    </div>
+
+    <!-- VIEW: WATCHLIST -->
+    <div id="watchlistView" class="view-section">
+      <div class="section-header-bar">
+        <div>
+          <p class="eyebrow">PERSONAL CURATION</p>
+          <h1 class="editorial-heading" id="watchlistHeading">Your Watchlist</h1>
+        </div>
+        <div class="studio-toolbar">
+          <div class="pill-group" id="watchlistFilterPills">
+            <button class="chip active" data-wl-filter="all">All Saved</button>
+            <button class="chip" data-wl-filter="towatch">To Watch</button>
+            <button class="chip" data-wl-filter="watched">Watched</button>
+          </div>
+          <button class="btn-outline btn-sm" id="exportWatchlistBtn">Export JSON</button>
+          <label class="btn-outline btn-sm file-label">
+            Import JSON
+            <input type="file" id="importWatchlistInput" accept="application/json" hidden />
+          </label>
+        </div>
+      </div>
+      <div class="media-grid" id="watchlistGrid"></div>
+    </div>
+  </main>
+
+  <!-- TITLE DETAIL & TRAILER MODAL -->
+  <div class="modal-backdrop hidden" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-dialog detail-dialog">
+      <button class="modal-close-btn" id="closeDetailModalBtn" aria-label="Close details">&times;</button>
+      <div id="detailModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ERROR-153-FREE YOUTUBE TRAILER THEATER -->
+  <div class="modal-backdrop hidden" id="trailerModal" role="dialog" aria-modal="true" aria-label="Trailer Theater">
+    <div class="modal-dialog trailer-dialog">
+      <div class="trailer-topbar">
+        <div>
+          <span class="eyebrow">SCREENING ROOM</span>
+          <h3 id="trailerTitleText">Official Trailer</h3>
+        </div>
+        <div class="trailer-topbar-actions">
+          <select id="trailerVariantSelect" class="hidden" aria-label="Select Video"></select>
+          <a id="trailerExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-outline btn-sm">Open on YouTube ↗</a>
+          <button class="modal-close-inline" id="closeTrailerModalBtn" aria-label="Close trailer">&times;</button>
+        </div>
+      </div>
+      <div class="trailer-stage" id="trailerStage"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS & APPEARANCE DRAWER -->
+  <div class="drawer-backdrop hidden" id="settingsDrawer">
+    <aside class="settings-panel" aria-label="Appearance and API Settings">
+      <div class="drawer-header">
+        <div>
+          <span class="eyebrow">PREFERENCES</span>
+          <h2>Studio Settings</h2>
+        </div>
+        <button class="modal-close-inline" id="closeSettingsBtn" aria-label="Close settings">&times;</button>
+      </div>
+
+      <div class="drawer-content">
+        <div class="settings-group">
+          <h3>Theme Surface</h3>
+          <div class="swatch-grid" id="themeSelectorGrid"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Formal Accent Color</h3>
+          <div class="accent-grid" id="accentSelectorGrid"></div>
+        </div>
+
+        <div class="settings-group">
+          <h3>API Key Overrides</h3>
+          <p class="helper-note">Stored privately in your browser's local storage. Leave blank to use the defaults in <code>config.js</code>.</p>
+          <label class="field-row">
+            <span>TMDB v3 API Key</span>
+            <input type="password" id="tmdbKeyInput" placeholder="Enter TMDB v3 API Key..." autocomplete="off" />
+          </label>
+          <label class="field-row">
+            <span>Google Gemini API Key (Optional — AI Search &amp; Verified Awards)</span>
+            <input type="password" id="geminiKeyInput" placeholder="Enter Gemini API Key..." autocomplete="off" />
+          </label>
+          <div class="settings-btn-row">
+            <button class="btn-accent btn-sm" id="saveApiKeysBtn">Save Keys &amp; Reload</button>
+            <button class="btn-outline btn-sm" id="clearCacheBtn">Clear Cache</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- MEMBER AUTH MODAL (SHA-256 HASHED) -->
+  <div class="modal-backdrop hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Member Sign In">
+    <div class="modal-dialog auth-dialog">
+      <button class="modal-close-btn" id="closeAuthModalBtn" aria-label="Close auth">&times;</button>
+      <div class="auth-header">
+        <span class="eyebrow">MEMBER ARCHIVE</span>
+        <h2 id="authModalTitle">Sign In to W·W·T</h2>
+        <p class="helper-note">Credentials are SHA-256 hashed locally to keep each member's watchlist separate.</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth-mode="login">Sign In</button>
+        <button class="auth-tab" data-auth-mode="signup">Create Account</button>
+      </div>
+      <form id="authForm" class="form-stack">
+        <label class="field-row">
+          <span>Username</span>
+          <input type="text" id="authUsername" required minlength="3" placeholder="e.g. cinephile" autocomplete="username" />
+        </label>
+        <label class="field-row">
+          <span>Password</span>
+          <input type="password" id="authPassword" required minlength="4" placeholder="••••••••" autocomplete="current-password" />
+        </label>
+        <p class="auth-error hidden" id="authErrorText"></p>
+        <button type="submit" class="btn-accent" id="authSubmitBtn">Sign In</button>
+      </form>
+      <div id="signedInPanel" class="hidden signed-in-panel">
+        <p>Signed in as <strong id="signedInUserLabel"></strong></p>
+        <button class="btn-outline" id="logoutBtn">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast hidden" id="toastEl" role="status" aria-live="polite"></div>
+
+  <!-- Scripts (ordered cleanly for zero-build static hosting) -->
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
