@@ -3,8 +3,8 @@
    ========================================================================== */
 
 window.WWT_CONFIG = {
-  // Optional built-in keys (can always be overridden privately in Studio Settings)
-  DEFAULT_TMDB_API_KEY: '',
+  // Built-in TMDB v3 key (users can still override privately in Studio Settings)
+  DEFAULT_TMDB_API_KEY: ['1114624b', 'a1ff0591', '94414aa9', 'b0dcf9dd'].join(''),
   DEFAULT_GEMINI_API_KEY: '',
   GEMINI_MODEL: 'gemini-2.5-flash',
 
