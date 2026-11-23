@@ -1,0 +1,188 @@
+/* ==========================================================================
+   WOULD WATCH THAT — Configuration, Presets & Theme Catalog
+   ========================================================================== */
+
+window.WWT_CONFIG = {
+  // Optional hidden/default keys (Base64 encoded or plain string).
+  // Users can always override these privately inside the Studio Settings Drawer.
+  DEFAULT_TMDB_API_KEY: '', // Paste your TMDB v3 API key here if hosting privately
+  DEFAULT_GEMINI_API_KEY: '', // Optional: Gemini API key for AI Discover & verified awards
+  GEMINI_MODEL: 'gemini-2.5-flash',
+
+  TMDB_BASE_URL: 'https://api.themoviedb.org/3',
+  TMDB_IMG_BASE: 'https://image.tmdb.org/t/p/',
+  CACHE_TTL_MS: 1000 * 60 * 60 * 12, // 12 hours persistent cache
+
+  STORAGE_KEYS: {
+    TMDB_KEY: 'wwt_override_tmdb_key',
+    GEMINI_KEY: 'wwt_override_gemini_key',
+    THEME: 'wwt_theme',
+    ACCENT: 'wwt_accent',
+    USERS: 'wwt_users_v1',
+    ACTIVE_USER: 'wwt_active_user_v1',
+    WATCHLIST_PREFIX: 'wwt_watchlist_',
+    CACHE_PREFIX: 'wwt_cache_v1_'
+  },
+
+  THEMES: [
+    { id: 'abyssal-carbon', name: 'Abyssal Carbon', swatch: '#0c0e11' },
+    { id: 'midnight-slate', name: 'Midnight Slate', swatch: '#162130' },
+    { id: 'pure-obsidian', name: 'Pure Obsidian', swatch: '#000000' },
+    { id: 'matinee-ivory', name: 'Matinee Ivory', swatch: '#f5f1e8' }
+  ],
+
+  ACCENTS: [
+    { id: 'royal-gold', name: 'Royal Gold', swatch: '#d4af37' },
+    { id: 'silver-nitrate', name: 'Silver Nitrate', swatch: '#c8d0d8' },
+    { id: 'deep-teal', name: 'Deep Teal', swatch: '#22a09a' },
+    { id: 'deep-burgundy', name: 'Deep Burgundy', swatch: '#a6344c' },
+    { id: 'midnight-indigo', name: 'Midnight Indigo', swatch: '#5e72c7' },
+    { id: 'deep-forest', name: 'Deep Forest', swatch: '#32936f' }
+  ],
+
+  GENRES: [
+    { id: 18, name: 'Drama' },
+    { id: 53, name: 'Thriller' },
+    { id: 80, name: 'Crime' },
+    { id: 878, name: 'Sci-Fi', tvId: 10765 },
+    { id: 28, name: 'Action', tvId: 10759 },
+    { id: 12, name: 'Adventure', tvId: 10759 },
+    { id: 35, name: 'Comedy' },
+    { id: 9648, name: 'Mystery' },
+    { id: 10749, name: 'Romance' },
+    { id: 27, name: 'Horror' },
+    { id: 14, name: 'Fantasy', tvId: 10765 },
+    { id: 36, name: 'History' },
+    { id: 10752, name: 'War', tvId: 10768 },
+    { id: 16, name: 'Animation' },
+    { id: 99, name: 'Documentary' }
+  ],
+
+  LANGUAGES: [
+    { code: '', name: 'All Languages' },
+    { code: 'en', name: 'English' },
+    { code: 'hi', name: 'Hindi (Bollywood)' },
+    { code: 'kn', name: 'Kannada' },
+    { code: 'ta', name: 'Tamil' },
+    { code: 'te', name: 'Telugu' },
+    { code: 'ml', name: 'Malayalam' },
+    { code: 'ko', name: 'Korean' },
+    { code: 'ja', name: 'Japanese' },
+    { code: 'fr', name: 'French' },
+    { code: 'es', name: 'Spanish' },
+    { code: 'it', name: 'Italian' },
+    { code: 'de', name: 'German' }
+  ],
+
+  STUDIO_PRESETS: [
+    { id: 41077, name: 'A24' },
+    { id: 10342, name: 'Studio Ghibli' },
+    { id: 3, name: 'Pixar' },
+    { id: 174, name: 'Warner Bros.' },
+    { id: 33, name: 'Universal' },
+    { id: 9996, name: 'Syncopy' },
+    { id: 10146, name: 'Bad Robot' },
+    { id: 49, name: 'HBO', isNetwork: true }
+  ],
+
+  ERAS: [
+    { id: 'all', label: 'All Eras', from: '', to: '' },
+    { id: 'classic', label: 'Classic (<1970)', from: 1920, to: 1969 },
+    { id: '70s', label: '1970s', from: 1970, to: 1979 },
+    { id: '80s', label: '1980s', from: 1980, to: 1989 },
+    { id: '90s', label: '1990s', from: 1990, to: 1999 },
+    { id: '2000s', label: '2000s', from: 2000, to: 2009 },
+    { id: '2010s', label: '2010s', from: 2010, to: 2019 },
+    { id: '2020s', label: '2020s', from: 2020, to: 2026 }
+  ],
+
+  // Curated verified prestige pools (TMDB IDs) so Awards filter works instantaneously
+  AWARDS_PRESETS: [
+    { id: 'all', label: 'All Titles' },
+    { id: 'oscar_bp', label: 'Oscar Best Picture' },
+    { id: 'oscar_acclaimed', label: 'Academy Award Winners' },
+    { id: 'cannes', label: 'Cannes Palme d’Or' },
+    { id: 'festival', label: 'Festival & Critics Darlings' }
+  ],
+
+  PRESTIGE_IDS: {
+    oscar_bp: [872585, 545611, 496243, 238, 240, 424, 122, 13, 1422, 6977, 194662, 376867, 776503, 1064213, 490132],
+    oscar_acclaimed: [872585, 545611, 496243, 281957, 155, 27205, 157336, 244786, 313369, 475557, 129, 76341, 438631, 693134, 68718, 106646],
+    cannes: [496243, 915935, 680, 103, 505192, 497828, 725201, 1064213, 194, 429],
+    festival: [530915, 666277, 843527, 419430, 508442, 603, 1124, 278, 389, 129, 372058]
+  },
+
+  // Badge lookup for verified winners displayed directly on posters & detail modals
+  KNOWN_AWARDS: {
+    872585: '7× Academy Awards · Best Picture',
+    545611: '7× Academy Awards · Best Picture',
+    496243: '4× Academy Awards · Palme d’Or',
+    281957: '3× Academy Awards · Best Actor',
+    238: '3× Academy Awards · Best Picture',
+    240: '6× Academy Awards · Best Picture',
+    424: '7× Academy Awards · Best Picture',
+    122: '11× Academy Awards · Best Picture',
+    1422: '4× Academy Awards · Best Picture',
+    155: '2× Academy Awards',
+    27205: '4× Academy Awards',
+    157336: 'Academy Award · Visual Effects',
+    244786: '3× Academy Awards',
+    313369: '6× Academy Awards',
+    129: 'Academy Award · Best Animated Feature',
+    915935: 'Palme d’Or · Academy Award',
+    1064213: 'Palme d’Or · Best Picture',
+    680: 'Palme d’Or · Academy Award',
+    1396: '16× Primetime Emmy Awards',
+    1399: '59× Primetime Emmy Awards',
+    66732: '12× Primetime Emmy Awards',
+    76331: '19× Primetime Emmy Awards'
+  },
+
+  STREAMING_PROVIDERS: [
+    { id: 8, name: 'Netflix' },
+    { id: 119, name: 'Prime Video' },
+    { id: 337, name: 'Disney+' },
+    { id: 350, name: 'Apple TV+' },
+    { id: 1899, name: 'Max' },
+    { id: 11, name: 'MUBI' }
+  ],
+
+  COLLECTIONS: [
+    {
+      id: 'prestige',
+      eyebrow: 'GOLD STANDARD',
+      title: 'Academy Award Prestige',
+      type: 'ids',
+      mediaType: 'movie',
+      ids: [872585, 496243, 281957, 545611, 244786, 1422, 155, 238, 129, 680]
+    },
+    {
+      id: 'trending_films',
+      eyebrow: 'NOW SCREENING',
+      title: 'Trending Feature Films',
+      type: 'endpoint',
+      mediaType: 'movie',
+      endpoint: '/trending/movie/week'
+    },
+    {
+      id: 'acclaimed_series',
+      eyebrow: 'PRESTIGE TELEVISION',
+      title: 'Acclaimed Limited & Drama Series',
+      type: 'endpoint',
+      mediaType: 'tv',
+      endpoint: '/tv/top_rated'
+    },
+    {
+      id: 'world_cinema',
+      eyebrow: 'INTERNATIONAL ARCHIVE',
+      title: 'Masterpieces of World Cinema',
+      type: 'discover',
+      mediaType: 'movie',
+      params: {
+        sort_by: 'vote_average.desc',
+        'vote_count.gte': 1200,
+        without_original_language: 'en'
+      }
+    }
+  ]
+};
