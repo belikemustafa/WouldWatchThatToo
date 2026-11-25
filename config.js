@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WOULD WATCH THAT — Configuration, Formal Palette & Curated Archive
+   WOULD WATCH THAT — Configuration, Built-in TMDB Key & Curated Quick-Picks
    ========================================================================== */
 
 window.WWT_CONFIG = {
@@ -20,7 +20,7 @@ window.WWT_CONFIG = {
     USERS: 'wwt_users_v2',
     ACTIVE_USER: 'wwt_active_user_v2',
     WATCHLIST_PREFIX: 'wwt_watchlist_',
-    CACHE_PREFIX: 'wwt_cache_v2_'
+    CACHE_PREFIX: 'wwt_cache_v3_'
   },
 
   // 3 Refined Dark Surfaces
@@ -30,7 +30,7 @@ window.WWT_CONFIG = {
     { id: 'pure-obsidian', name: 'Pure Obsidian', swatch: '#000000' }
   ],
 
-  // 5 Focused Formal Accents: Royal Gold, Silver Nitrate, Deep Teal + 2 Dark Formal Shades
+  // 5 Focused Formal Accents
   ACCENTS: [
     { id: 'royal-gold', name: 'Royal Gold', swatch: '#c9a23f' },
     { id: 'silver-nitrate', name: 'Silver Nitrate', swatch: '#bfc7d1' },
@@ -71,6 +71,31 @@ window.WWT_CONFIG = {
     { code: 'es', name: 'Spanish' },
     { code: 'it', name: 'Italian' },
     { code: 'de', name: 'German' }
+  ],
+
+  // Tap-to-select & tap-again-to-deselect curated stars
+  CAST_PRESETS: [
+    { id: 6193, name: 'Leonardo DiCaprio' },
+    { id: 2037, name: 'Cillian Murphy' },
+    { id: 380, name: 'Robert De Niro' },
+    { id: 1158, name: 'Al Pacino' },
+    { id: 54693, name: 'Emma Stone' },
+    { id: 287, name: 'Brad Pitt' },
+    { id: 35742, name: 'Shah Rukh Khan' },
+    { id: 234352, name: 'Margot Robbie' },
+    { id: 3894, name: 'Christian Bale' },
+    { id: 10297, name: 'Matthew McConaughey' }
+  ],
+
+  DIRECTOR_PRESETS: [
+    { id: 525, name: 'Christopher Nolan' },
+    { id: 137427, name: 'Denis Villeneuve' },
+    { id: 1032, name: 'Martin Scorsese' },
+    { id: 138, name: 'Quentin Tarantino' },
+    { id: 7467, name: 'David Fincher' },
+    { id: 21684, name: 'Bong Joon-ho' },
+    { id: 608, name: 'Hayao Miyazaki' },
+    { id: 147021, name: 'S. S. Rajamouli' }
   ],
 
   STUDIO_PRESETS: [
