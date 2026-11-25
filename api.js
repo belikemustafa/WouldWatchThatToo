@@ -1,5 +1,5 @@
 /* ==========================================================================
-   WOULD WATCH THAT — API Client, Separate IMDb/Letterboxd Calibration & Sorter
+   WOULD WATCH THAT — API Client, Native AND/OR Filter Queries & Strict Sorter
    ========================================================================== */
 
 window.WWT_API = (() => {
@@ -26,7 +26,7 @@ window.WWT_API = (() => {
     return Boolean(getTmdbKey());
   }
 
-  /* ---------- Persistent Cache ---------- */
+  /* ---------- Cache ---------- */
   function readCache(key) {
     if (memCache.has(key)) return memCache.get(key);
     try {
@@ -64,8 +64,7 @@ window.WWT_API = (() => {
     });
   }
 
-  /* ---------- Distinct IMDb vs Letterboxd Rating Calibration ---------- */
-  // Strictly treats 0-vote or unrated titles as null so they NEVER leak into rating sorts.
+  /* ---------- Distinct IMDb vs Letterboxd Calibration ---------- */
   function enrichMediaItem(item, forcedType) {
     const mediaType = forcedType || item.media_type || (item.first_air_date ? 'tv' : 'movie');
     const title = item.title || item.name || 'Untitled';
@@ -75,14 +74,11 @@ window.WWT_API = (() => {
     const voteCount = Number(item.vote_count || 0);
     const hasReliableRating = rawVote > 0 && voteCount >= 20;
 
-    // Check if we already have Gemini-verified scores cached for this title
     const verifiedCache = readCache(`verify_${mediaType}_${title}_${year}`);
-
     let imdbScore = verifiedCache?.imdb ?? null;
     let letterboxdScore = verifiedCache?.letterboxd ?? null;
 
     if (hasReliableRating) {
-      // IMDb Bayesian weighting: rewards broad audience volume + high consensus
       if (imdbScore === null) {
         const m = 450;
         const prior = 6.6;
@@ -90,7 +86,6 @@ window.WWT_API = (() => {
         imdbScore = Number(Math.min(9.5, Math.max(1.5, weighted + 0.15)).toFixed(1));
       }
 
-      // Letterboxd cinephile calibration: distinct weighting for auteur/prestige/world cinema
       if (letterboxdScore === null) {
         const genreIds = item.genre_ids || (item.genres || []).map((g) => g.id);
         const prestigeLift =
@@ -120,12 +115,11 @@ window.WWT_API = (() => {
     };
   }
 
-  /* ---------- Universal Proper Sorter (Excludes Unrated on Rating Sorts) ---------- */
+  /* ---------- Proper Universal Sorter (Excludes Unrated on Rating Sorts) ---------- */
   function sortAndSanitize(items, sortMode) {
     let list = [...items];
 
     if (sortMode === 'imdb.desc' || sortMode === 'imdb.asc') {
-      // Strictly drop movies/shows with no IMDb rating
       list = list.filter((i) => i.hasImdb);
       return list.sort((a, b) =>
         sortMode === 'imdb.desc'
@@ -135,7 +129,6 @@ window.WWT_API = (() => {
     }
 
     if (sortMode === 'letterboxd.desc' || sortMode === 'letterboxd.asc') {
-      // Strictly drop movies/shows with no Letterboxd rating
       list = list.filter((i) => i.hasLetterboxd);
       return list.sort((a, b) =>
         sortMode === 'letterboxd.desc'
@@ -160,11 +153,10 @@ window.WWT_API = (() => {
       return list.sort((a, b) => a.displayTitle.localeCompare(b.displayTitle));
     }
 
-    // Editorial popularity
     return list.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
   }
 
-  /* ---------- TMDB Request Wrapper ---------- */
+  /* ---------- TMDB Fetch ---------- */
   async function tmdbFetch(path, params = {}, skipCache = false) {
     const apiKey = getTmdbKey();
     if (!apiKey) throw new Error('NO_TMDB_KEY');
@@ -233,34 +225,48 @@ window.WWT_API = (() => {
   async function searchPerson(query) {
     if (!query || query.trim().length < 2) return [];
     const data = await tmdbFetch('/search/person', { query: query.trim() });
-    return (data.results || []).slice(0, 6);
+    return (data.results || []).slice(0, 7);
   }
 
   async function searchCompany(query) {
     if (!query || query.trim().length < 2) return [];
     const data = await tmdbFetch('/search/company', { query: query.trim() });
-    return (data.results || []).slice(0, 6);
+    return (data.results || []).slice(0, 7);
   }
 
-  /* ---------- Filter Studio Discovery Engine ---------- */
+  /* ---------- Filter Studio Discovery with AND / OR Logic ---------- */
   async function discoverWithFilters(filters, page = 1) {
     const isRatingSort = ['imdb.desc', 'imdb.asc', 'letterboxd.desc', 'letterboxd.asc'].includes(filters.sort);
+    const genreSep = filters.genreLogic === 'OR' ? '|' : ',';
+    const castSep = filters.castLogic === 'OR' ? '|' : ',';
+    const dirSep = filters.directorLogic === 'OR' ? '|' : ',';
+    const studioSep = filters.studioLogic === 'OR' ? '|' : ',';
 
-    // Curated Awards pools
+    // Curated Prestige / Awards pools
     if (filters.awards && filters.awards !== 'all' && page === 1 && filters.format === 'movie') {
       const poolIds = CFG.PRESTIGE_IDS[filters.awards] || [];
       let items = await fetchByIds(poolIds, 'movie');
-      items = applyLocalScoreFilters(items, filters);
+      items = applyLocalFilters(items, filters);
 
       if (filters.cast.length || filters.directors.length) {
         const detailed = await Promise.all(items.map((it) => fetchDetails('movie', it.id)));
         items = detailed.filter((d) => {
           const castIds = (d.credits?.cast || []).map((c) => c.id);
           const dirIds = (d.credits?.crew || []).filter((c) => c.job === 'Director').map((c) => c.id);
-          return (
-            filters.cast.every((p) => castIds.includes(p.id)) &&
-            filters.directors.every((p) => dirIds.includes(p.id))
-          );
+
+          const castOk = !filters.cast.length
+            ? true
+            : filters.castLogic === 'OR'
+            ? filters.cast.some((p) => castIds.includes(p.id))
+            : filters.cast.every((p) => castIds.includes(p.id));
+
+          const dirOk = !filters.directors.length
+            ? true
+            : filters.directorLogic === 'OR'
+            ? filters.directors.some((p) => dirIds.includes(p.id))
+            : filters.directors.every((p) => dirIds.includes(p.id));
+
+          return castOk && dirOk;
         });
       }
 
@@ -270,12 +276,8 @@ window.WWT_API = (() => {
 
     const isTv = filters.format === 'tv';
     const mediaType = isTv ? 'tv' : 'movie';
-    const params = {
-      page,
-      include_adult: false
-    };
+    const params = { page, include_adult: false };
 
-    // Proper TMDB server-side sort mapping + strict vote_count floor on rating sorts
     if (filters.sort === 'imdb.desc' || filters.sort === 'letterboxd.desc') {
       params.sort_by = 'vote_average.desc';
       params['vote_count.gte'] = isTv ? 180 : 350;
@@ -300,24 +302,35 @@ window.WWT_API = (() => {
       params['vote_count.gte'] = filters.minImdb > 0 || filters.minLetterboxd > 0 ? 50 : 10;
     }
 
-    // Genres & Format
-    const genreIds = new Set(
-      filters.genres.map((gId) => {
-        if (!isTv) return gId;
-        const found = CFG.GENRES.find((g) => g.id === gId);
-        return found?.tvId || gId;
-      })
-    );
+    // Format + Genre AND / OR handling
+    const mappedGenres = filters.genres.map((gId) => {
+      if (!isTv) return gId;
+      const found = CFG.GENRES.find((g) => g.id === gId);
+      return found?.tvId || gId;
+    });
+
+    let postFilterOrGenres = false;
     if (filters.format === 'anime') {
-      genreIds.add(16);
       params.with_original_language = 'ja';
+      if (mappedGenres.length && filters.genreLogic === 'OR') {
+        params.with_genres = '16';
+        postFilterOrGenres = true;
+      } else {
+        params.with_genres = [...new Set([16, ...mappedGenres])].join(',');
+      }
     } else if (filters.format === 'documentary') {
-      genreIds.add(99);
+      if (mappedGenres.length && filters.genreLogic === 'OR') {
+        params.with_genres = '99';
+        postFilterOrGenres = true;
+      } else {
+        params.with_genres = [...new Set([99, ...mappedGenres])].join(',');
+      }
+    } else if (mappedGenres.length) {
+      params.with_genres = [...new Set(mappedGenres)].join(genreSep);
     }
-    if (genreIds.size) params.with_genres = [...genreIds].join(',');
+
     if (filters.language) params.with_original_language = filters.language;
 
-    // Separate IMDb & Letterboxd minimum thresholds passed down to TMDB as baseline
     const minTmdbFloor = Math.max(
       filters.minImdb > 0 ? Math.max(0, filters.minImdb - 0.3) : 0,
       filters.minLetterboxd > 0 ? Math.max(0, filters.minLetterboxd * 2 - 0.4) : 0
@@ -327,25 +340,22 @@ window.WWT_API = (() => {
       params['vote_count.gte'] = Math.max(params['vote_count.gte'] || 0, 35);
     }
 
-    // Cast & Directors
+    // Cast & Directors with AND / OR
     if (!isTv) {
-      if (filters.cast.length) params.with_cast = filters.cast.map((p) => p.id).join(',');
-      if (filters.directors.length) params.with_crew = filters.directors.map((p) => p.id).join(',');
+      if (filters.cast.length) params.with_cast = filters.cast.map((p) => p.id).join(castSep);
+      if (filters.directors.length) params.with_crew = filters.directors.map((p) => p.id).join(dirSep);
     } else if (filters.cast.length || filters.directors.length) {
-      const personId = (filters.cast[0] || filters.directors[0]).id;
-      const credits = await tmdbFetch(`/person/${personId}/tv_credits`);
-      let list = [...(credits.cast || []), ...(credits.crew || [])]
-        .filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx)
-        .map((i) => enrichMediaItem(i, 'tv'));
-      list = sortAndSanitize(applyLocalScoreFilters(list, filters), filters.sort);
-      return { results: list, total_pages: 1, total_results: list.length };
+      const tvList = await resolveTvByPeople(filters);
+      const filtered = applyLocalFilters(tvList, filters);
+      const sorted = sortAndSanitize(filtered, filters.sort);
+      return { results: sorted, total_pages: 1, total_results: sorted.length };
     }
 
-    // Studios & Networks
+    // Studios & Networks with AND / OR
     const companies = filters.studios.filter((s) => !s.isNetwork).map((s) => s.id);
     const networks = filters.studios.filter((s) => s.isNetwork).map((s) => s.id);
-    if (companies.length) params.with_companies = companies.join('|');
-    if (networks.length && isTv) params.with_networks = networks.join('|');
+    if (companies.length) params.with_companies = companies.join(studioSep);
+    if (networks.length && isTv) params.with_networks = networks.join(studioSep);
 
     // Era / Year
     if (filters.yearFrom) params[isTv ? 'first_air_date.gte' : 'primary_release_date.gte'] = `${filters.yearFrom}-01-01`;
@@ -360,14 +370,19 @@ window.WWT_API = (() => {
 
     let data = await tmdbFetch(`/discover/${mediaType}`, params);
 
-    // Smart fallback for niche filters (e.g. regional cinema + high rating sort): relax vote_count floor from 350 → 25, still keeping unrated titles excluded
     if (isRatingSort && (data.results || []).length < 5 && (params['vote_count.gte'] || 0) > 25) {
       params['vote_count.gte'] = 25;
       data = await tmdbFetch(`/discover/${mediaType}`, params);
     }
 
     let results = (data.results || []).map((i) => enrichMediaItem(i, mediaType));
-    results = applyLocalScoreFilters(results, filters);
+    if (postFilterOrGenres) {
+      results = results.filter((it) => {
+        const gIds = it.genre_ids || [];
+        return mappedGenres.some((g) => gIds.includes(g));
+      });
+    }
+    results = applyLocalFilters(results, filters);
     results = sortAndSanitize(results, filters.sort);
 
     return {
@@ -377,16 +392,57 @@ window.WWT_API = (() => {
     };
   }
 
-  function applyLocalScoreFilters(items, filters) {
+  async function resolveTvByPeople(filters) {
+    const fetchSet = async (people, roleKey) => {
+      if (!people.length) return null;
+      const responses = await Promise.all(people.slice(0, 4).map((p) => tmdbFetch(`/person/${p.id}/tv_credits`)));
+      const maps = responses.map((r) => {
+        const m = new Map();
+        (r[roleKey] || []).forEach((show) => m.set(show.id, show));
+        return m;
+      });
+      const logic = roleKey === 'cast' ? filters.castLogic : filters.directorLogic;
+      if (logic === 'AND') {
+        const first = maps[0];
+        const out = new Map();
+        first.forEach((show, id) => {
+          if (maps.every((m) => m.has(id))) out.set(id, show);
+        });
+        return out;
+      }
+      const union = new Map();
+      maps.forEach((m) => m.forEach((show, id) => union.set(id, show)));
+      return union;
+    };
+
+    const castMap = await fetchSet(filters.cast, 'cast');
+    const crewMap = await fetchSet(filters.directors, 'crew');
+
+    let combined = new Map();
+    if (castMap && crewMap) {
+      castMap.forEach((show, id) => {
+        if (crewMap.has(id)) combined.set(id, show);
+      });
+    } else {
+      combined = castMap || crewMap || new Map();
+    }
+    return [...combined.values()].map((s) => enrichMediaItem(s, 'tv'));
+  }
+
+  function applyLocalFilters(items, filters) {
     return items.filter((item) => {
       if (filters.minImdb > 0 && (!item.hasImdb || item.imdbScore < filters.minImdb)) return false;
       if (filters.minLetterboxd > 0 && (!item.hasLetterboxd || item.letterboxdScore < filters.minLetterboxd)) return false;
       if (filters.language && item.original_language !== filters.language) return false;
       if (filters.yearFrom && Number(item.displayYear) < Number(filters.yearFrom)) return false;
       if (filters.yearTo && Number(item.displayYear) > Number(filters.yearTo)) return false;
-      if (filters.genres.length && item.genres) {
-        const ids = item.genres.map((g) => g.id);
-        if (!filters.genres.every((gId) => ids.includes(gId))) return false;
+      if (filters.genres.length && (item.genres || item.genre_ids)) {
+        const ids = item.genres ? item.genres.map((g) => g.id) : item.genre_ids;
+        const ok =
+          filters.genreLogic === 'OR'
+            ? filters.genres.some((gId) => ids.includes(gId))
+            : filters.genres.every((gId) => ids.includes(gId));
+        if (!ok) return false;
       }
       return true;
     });
@@ -450,7 +506,7 @@ Return ONLY valid JSON with objects containing: {"title": string, "year": number
           });
         }
       } catch {
-        // skip unmatched
+        // skip
       }
     }
     return resolved;
