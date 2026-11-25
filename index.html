@@ -2,25 +2,26 @@
 <html lang="en" data-theme="abyssal-carbon" data-accent="royal-gold">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta name="theme-color" content="#0a0c0f" />
   <title>Would Watch That — Curated Cinema &amp; Series Archive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Subtle Ambient Editorial Backdrop -->
-  <div class="ambient-vignette" aria-hidden="true"></div>
+  <!-- Ambient Cinema Glow -->
+  <div class="ambient-vignette" id="ambientVignette" aria-hidden="true"></div>
 
-  <!-- Formal Editorial Navigation -->
+  <!-- Top Editorial Header -->
   <header class="site-header">
     <div class="header-inner">
       <a href="#home" class="brand-lockup" id="brandHomeBtn" aria-label="Would Watch That Home">
         <span class="brand-monogram" aria-hidden="true">
-          <svg viewBox="0 0 120 46" width="90" height="34" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2 H108 L118 12 V34 L108 44 H12 L2 34 V12 Z" stroke="currentColor" stroke-width="1.2" />
+          <svg viewBox="0 0 120 46" width="84" height="32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2 H108 L118 12 V34 L108 44 H12 L2 34 V12 Z" stroke="currentColor" stroke-width="1.3" />
             <path d="M15 6 H105 L113 14 V32 L105 40 H15 L7 32 V14 Z" stroke="currentColor" stroke-width="0.6" opacity="0.55" />
             <polygon points="60,0 63,3 60,6 57,3" fill="currentColor" />
             <polygon points="60,40 63,43 60,46 57,43" fill="currentColor" />
@@ -33,6 +34,7 @@
         </span>
       </a>
 
+      <!-- Desktop Navigation -->
       <nav class="main-nav" aria-label="Primary Navigation">
         <button class="nav-btn active" data-view="home">Home</button>
         <button class="nav-btn" data-view="discover">Filter Studio</button>
@@ -43,19 +45,17 @@
 
       <div class="header-actions">
         <button class="icon-btn" id="openSettingsBtn" title="Appearance & API Settings" aria-label="Studio Settings">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6">
             <circle cx="12" cy="12" r="3" />
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
 
-        <!-- Explicit Log In & Sign Up buttons when guest -->
         <div class="auth-header-group" id="guestAuthButtons">
           <button class="btn-ghost btn-sm" id="headerLoginBtn">Log In</button>
           <button class="btn-accent btn-sm" id="headerSignupBtn">Sign Up</button>
         </div>
 
-        <!-- Member Badge when signed in -->
         <button class="member-pill hidden" id="memberProfileBtn" title="Member Account">
           <span class="member-avatar" id="memberAvatarInitial">M</span>
           <span id="memberHandleLabel">@member</span>
@@ -64,13 +64,16 @@
     </div>
   </header>
 
-  <!-- API Key Setup Strip -->
+  <!-- API Key Notice (auto-hidden when configured) -->
   <div class="api-banner hidden" id="apiSetupBanner">
     <div class="api-banner-inner">
-      <span>Connect your <strong>TMDB API Key</strong> (and optional Gemini key for AI Search &amp; verified awards) to unlock the live archive.</span>
-      <button class="btn-accent btn-sm" id="bannerOpenSettingsBtn">Configure Keys</button>
+      <span>Connect your <strong>TMDB API Key</strong> in Settings to load the live archive.</span>
+      <button class="btn-accent btn-sm" id="bannerOpenSettingsBtn">Configure</button>
     </div>
   </div>
+
+  <!-- Mobile Bottom Sheet Scrim -->
+  <div class="sheet-backdrop hidden" id="sheetBackdrop"></div>
 
   <!-- Main Content -->
   <main class="main-shell">
@@ -78,14 +81,14 @@
     <section class="search-bar-section">
       <form id="conciergeSearchForm" class="concierge-form" autocomplete="off">
         <div class="concierge-input-wrap">
-          <svg class="search-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
           <input
             type="text"
             id="conciergeInput"
-            placeholder="Search a title, filmmaker, or mood — e.g. 'Oscar-winning Neo-Noir under 2 hours'..."
+            placeholder="Search title, actor, or mood (e.g. 'Oscar Neo-Noir under 2h')…"
           />
           <button type="button" class="clear-search-btn hidden" id="clearSearchBtn" aria-label="Clear search">&times;</button>
         </div>
@@ -103,29 +106,30 @@
 
     <!-- ==================== VIEW: HOME ==================== -->
     <div id="homeView" class="view-section active">
-      <!-- Flagship Hero Spotlight -->
-      <section class="hero-spotlight" aria-label="Flagship Spotlight">
-        <!-- Art Deco Corner Filigree SVG -->
-        <svg class="deco-corner deco-tl" viewBox="0 0 40 40" width="32" height="32" fill="none" aria-hidden="true">
-          <path d="M2 38 V8 L8 2 H38 M8 38 V12 L12 8 H38" stroke="currentColor" stroke-width="1" />
+      <section class="hero-spotlight" id="heroSpotlight" aria-label="Flagship Spotlight">
+        <svg class="deco-corner deco-tl" viewBox="0 0 40 40" width="30" height="30" fill="none" aria-hidden="true">
+          <path d="M2 38 V8 L8 2 H38 M8 38 V12 L12 8 H38" stroke="currentColor" stroke-width="1.1" />
         </svg>
-        <svg class="deco-corner deco-tr" viewBox="0 0 40 40" width="32" height="32" fill="none" aria-hidden="true">
-          <path d="M38 38 V8 L32 2 H2 M32 38 V12 L28 8 H2" stroke="currentColor" stroke-width="1" />
+        <svg class="deco-corner deco-tr" viewBox="0 0 40 40" width="30" height="30" fill="none" aria-hidden="true">
+          <path d="M38 38 V8 L32 2 H2 M32 38 V12 L28 8 H2" stroke="currentColor" stroke-width="1.1" />
         </svg>
 
         <div class="hero-track" id="heroTrack">
-          <div class="hero-skeleton">Curating Flagship Spotlight…</div>
+          <div class="hero-skeleton shimmer">
+            <span>Curating Flagship Spotlight…</span>
+          </div>
         </div>
 
         <div class="hero-controls">
           <button class="hero-arrow" id="heroPrevBtn" aria-label="Previous Spotlight">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
           <div class="hero-dots" id="heroDots"></div>
           <button class="hero-arrow" id="heroNextBtn" aria-label="Next Spotlight">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         </div>
+        <div class="hero-progress-track"><div class="hero-progress-bar" id="heroProgressBar"></div></div>
       </section>
 
       <!-- Ornamental Art Deco Divider -->
@@ -140,7 +144,6 @@
         <span class="divider-line"></span>
       </div>
 
-      <!-- Curated Collections -->
       <section class="collections-wrapper" id="collectionsContainer"></section>
     </div>
 
@@ -152,28 +155,32 @@
           <h1 class="editorial-heading">The Filter Studio</h1>
         </div>
         <div class="studio-toolbar">
-          <button class="btn-ghost btn-sm" id="resetAllFiltersBtn">Reset Filters</button>
-          <button class="btn-accent btn-sm" id="applyFiltersBtn">Apply Selection</button>
+          <button class="btn-ghost btn-sm" id="resetAllFiltersBtn">Reset</button>
+          <button class="btn-accent btn-sm" id="applyFiltersBtn">Apply Filters</button>
         </div>
       </div>
 
-      <!-- Sleek Non-Clanky Architectural Popover Filter Bar (10 Separated Controls) -->
+      <!-- Large Touch-Optimized Filter Triggers (10 Separated Controls) -->
       <div class="filter-bar-shell" id="filterBarShell">
         <!-- 1. Format & Language -->
         <div class="filter-popover" data-filter-box="format">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h5M17 9h5M2 15h5M17 15h5"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 4v16M17 4v16M2 9h5M17 9h5M2 15h5M17 15h5"/></svg>
             </span>
             <span class="ft-labels">
-              <span class="ft-name">Format &amp; Language</span>
+              <span class="ft-name">Format &amp; Lang</span>
               <span class="ft-value" id="badge-format">Movies · Any</span>
             </span>
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Format &amp; Language</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="panel-section">
-              <span class="panel-label">Format</span>
               <div class="pill-group" id="formatPills">
                 <button type="button" class="chip active" data-format="movie">Movies</button>
                 <button type="button" class="chip" data-format="tv">TV Series</button>
@@ -185,14 +192,15 @@
               <span>Original Language</span>
               <select id="languageSelect"></select>
             </label>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
-        <!-- 2. Genre -->
+        <!-- 2. Genre (with AND / OR) -->
         <div class="filter-popover" data-filter-box="genre">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 11v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M4 11l16-4-1.5-4L2.5 7 4 11z"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 11v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M4 11l16-4-1.5-4L2.5 7 4 11z"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Genre</span>
@@ -201,8 +209,18 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel filter-panel-wide hidden">
-            <span class="panel-label">Select One or More Genres</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Genres</span>
+              <div class="logic-switch" data-logic-toggle="genre" role="group" aria-label="Genre match logic">
+                <button type="button" class="logic-btn active" data-logic-val="AND" title="Must have ALL selected genres">AND</button>
+                <button type="button" class="logic-btn" data-logic-val="OR" title="Match ANY selected genre">OR</button>
+              </div>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <p class="helper-note" id="genreLogicHint">Matching titles that contain <strong>all</strong> selected genres.</p>
             <div class="pill-group" id="genrePills"></div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
@@ -210,16 +228,20 @@
         <div class="filter-popover" data-filter-box="imdb">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon ft-icon-imdb" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2.5l2.85 5.77 6.37.93-4.61 4.49 1.09 6.35L12 17.04l-5.7 3 1.09-6.35-4.61-4.49 6.37-.93L12 2.5z"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor"><path d="M12 2.5l2.85 5.77 6.37.93-4.61 4.49 1.09 6.35L12 17.04l-5.7 3 1.09-6.35-4.61-4.49 6.37-.93L12 2.5z"/></svg>
             </span>
             <span class="ft-labels">
-              <span class="ft-name">IMDb Rating</span>
+              <span class="ft-name">IMDb Score</span>
               <span class="ft-value" id="badge-imdb">Any</span>
             </span>
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
-            <span class="panel-label">Minimum IMDb Score (/10)</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Minimum IMDb Rating (/10)</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="pill-group" id="imdbPresets">
               <button type="button" class="chip active" data-imdb-preset="0">Any</button>
               <button type="button" class="chip" data-imdb-preset="6.5">6.5+</button>
@@ -232,6 +254,7 @@
               <span>Fine-Tune: <strong id="minImdbVal">Any</strong></span>
               <input type="range" id="minImdbRange" min="0" max="9" step="0.1" value="0" />
             </label>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
@@ -239,7 +262,7 @@
         <div class="filter-popover" data-filter-box="letterboxd">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 36 14" width="22" height="10">
+              <svg viewBox="0 0 36 14" width="24" height="11">
                 <circle cx="7" cy="7" r="4.5" fill="#ff8000" />
                 <circle cx="18" cy="7" r="4.5" fill="#00e054" />
                 <circle cx="29" cy="7" r="4.5" fill="#40bcf4" />
@@ -252,7 +275,11 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
-            <span class="panel-label">Minimum Letterboxd Score (/5★)</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Minimum Letterboxd (/5★)</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="pill-group" id="lbPresets">
               <button type="button" class="chip active" data-lb-preset="0">Any</button>
               <button type="button" class="chip" data-lb-preset="3.2">3.2★+</button>
@@ -265,14 +292,15 @@
               <span>Fine-Tune: <strong id="minLbVal">Any</strong></span>
               <input type="range" id="minLbRange" min="0" max="4.6" step="0.1" value="0" />
             </label>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
-        <!-- 5. Cast & Stars -->
+        <!-- 5. Cast & Stars (with AND / OR + Tap-Again Deselect) -->
         <div class="filter-popover" data-filter-box="cast">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Cast &amp; Stars</span>
@@ -280,21 +308,35 @@
             </span>
             <span class="ft-chevron">▾</span>
           </button>
-          <div class="filter-panel hidden">
-            <span class="panel-label">Search Actors &amp; Performers</span>
+          <div class="filter-panel filter-panel-wide hidden">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Cast &amp; Stars</span>
+              <div class="logic-switch" data-logic-toggle="cast" role="group" aria-label="Cast match logic">
+                <button type="button" class="logic-btn active" data-logic-val="AND" title="Must co-star together">AND</button>
+                <button type="button" class="logic-btn" data-logic-val="OR" title="Starring any selected actor">OR</button>
+              </div>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <p class="helper-note" id="castLogicHint">Tap any actor to select, or tap again to deselect. <strong>AND</strong> finds co-stars.</p>
             <div class="autocomplete-wrap">
-              <input type="text" id="castSearchInput" placeholder="e.g. Leonardo DiCaprio…" />
+              <input type="text" id="castSearchInput" placeholder="Search any actor (e.g. Leonardo DiCaprio)…" />
               <div class="autocomplete-menu hidden" id="castSuggestions"></div>
             </div>
             <div class="selected-tags" id="selectedCastTags"></div>
+            <div class="panel-section">
+              <span class="sub-label">Quick Select Stars</span>
+              <div class="pill-group" id="castPresets"></div>
+            </div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
-        <!-- 6. Directors & Creators -->
+        <!-- 6. Directors & Creators (with AND / OR + Tap-Again Deselect) -->
         <div class="filter-popover" data-filter-box="director">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l14-5v12L3 13v-2z"/><path d="M17 9.5l4-1.5v8l-4-1.5"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l14-5v12L3 13v-2z"/><path d="M17 9.5l4-1.5v8l-4-1.5"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Directors</span>
@@ -302,21 +344,35 @@
             </span>
             <span class="ft-chevron">▾</span>
           </button>
-          <div class="filter-panel hidden">
-            <span class="panel-label">Search Directors &amp; Showrunners</span>
+          <div class="filter-panel filter-panel-wide hidden">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Directors &amp; Creators</span>
+              <div class="logic-switch" data-logic-toggle="director" role="group" aria-label="Director match logic">
+                <button type="button" class="logic-btn" data-logic-val="AND">AND</button>
+                <button type="button" class="logic-btn active" data-logic-val="OR">OR</button>
+              </div>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
+            <p class="helper-note" id="directorLogicHint">Showing films by <strong>any</strong> selected director. Tap again to deselect.</p>
             <div class="autocomplete-wrap">
-              <input type="text" id="directorSearchInput" placeholder="e.g. Christopher Nolan…" />
+              <input type="text" id="directorSearchInput" placeholder="Search director (e.g. Christopher Nolan)…" />
               <div class="autocomplete-menu hidden" id="directorSuggestions"></div>
             </div>
             <div class="selected-tags" id="selectedDirectorTags"></div>
+            <div class="panel-section">
+              <span class="sub-label">Notable Auteurs</span>
+              <div class="pill-group" id="directorPresets"></div>
+            </div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
-        <!-- 7. Studios & Networks -->
+        <!-- 7. Studios & Networks (with AND / OR + Tap-Again Deselect) -->
         <div class="filter-popover" data-filter-box="studio">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Studios</span>
@@ -325,13 +381,22 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel filter-panel-wide hidden">
-            <span class="panel-label">Curated Studios &amp; Networks</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Studios &amp; Networks</span>
+              <div class="logic-switch" data-logic-toggle="studio" role="group" aria-label="Studio match logic">
+                <button type="button" class="logic-btn" data-logic-val="AND">AND</button>
+                <button type="button" class="logic-btn active" data-logic-val="OR">OR</button>
+              </div>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="pill-group" id="studioPresets"></div>
             <div class="autocomplete-wrap">
-              <input type="text" id="studioSearchInput" placeholder="Search any production company…" />
+              <input type="text" id="studioSearchInput" placeholder="Search production company…" />
               <div class="autocomplete-menu hidden" id="studioSuggestions"></div>
             </div>
             <div class="selected-tags" id="selectedStudioTags"></div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
@@ -339,7 +404,7 @@
         <div class="filter-popover" data-filter-box="era">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Era &amp; Year</span>
@@ -348,13 +413,18 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
-            <span class="panel-label">Release Decade</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Release Decade</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="pill-group" id="eraPresets"></div>
             <div class="year-range-row">
               <input type="number" id="yearFromInput" placeholder="From (1990)" min="1900" max="2030" />
               <span>–</span>
               <input type="number" id="yearToInput" placeholder="To (2026)" min="1900" max="2030" />
             </div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
@@ -362,7 +432,7 @@
         <div class="filter-popover" data-filter-box="awards">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9c-2 2-2 7 2 10M18 9c2 2 2 7-2 10"/><circle cx="12" cy="10" r="4"/><path d="M9 19h6"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 9c-2 2-2 7 2 10M18 9c2 2 2 7-2 10"/><circle cx="12" cy="10" r="4"/><path d="M9 19h6"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Awards</span>
@@ -371,9 +441,14 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
-            <span class="panel-label">Prestige &amp; Festival Honors</span>
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Prestige &amp; Festival Honors</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <div class="pill-group" id="awardsPills"></div>
             <p class="helper-note">Verified via curated prestige lists &amp; Gemini Search Grounding.</p>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
 
@@ -381,7 +456,7 @@
         <div class="filter-popover" data-filter-box="runtime">
           <button type="button" class="filter-trigger" aria-expanded="false">
             <span class="ft-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             </span>
             <span class="ft-labels">
               <span class="ft-name">Runtime &amp; Stream</span>
@@ -390,19 +465,25 @@
             <span class="ft-chevron">▾</span>
           </button>
           <div class="filter-panel hidden">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-header">
+              <span class="panel-label">Runtime &amp; Platforms</span>
+              <button type="button" class="sheet-close-btn" aria-label="Close">&times;</button>
+            </div>
             <label class="field-row">
               <span>Max Runtime: <strong id="maxRuntimeVal">Any</strong></span>
               <input type="range" id="maxRuntimeRange" min="60" max="240" step="15" value="240" />
             </label>
             <div class="panel-section">
-              <span class="panel-label">Streaming Platforms</span>
+              <span class="sub-label">Streaming Platforms</span>
               <div class="pill-group" id="streamingPills"></div>
             </div>
+            <button type="button" class="btn-accent sheet-done-btn">Apply &amp; Show Results</button>
           </div>
         </div>
       </div>
 
-      <!-- Active Filter Summary Strip -->
+      <!-- Interactive Active Filter Chips (Tap any chip to remove immediately) -->
       <div class="active-filters-strip hidden" id="activeFiltersStrip"></div>
 
       <!-- Formal Sorter & Results Meta Bar -->
@@ -410,25 +491,21 @@
         <div class="results-meta" id="resultsMeta">Curated archive ready.</div>
 
         <div class="sorter-shell" aria-label="Sort Results">
-          <span class="sorter-label">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
-            Sort
-          </span>
           <div class="sorter-quick-pills" id="sorterQuickPills">
             <button type="button" class="sort-pill active" data-sort-val="popularity.desc">Popular</button>
-            <button type="button" class="sort-pill" data-sort-val="imdb.desc">IMDb Highest</button>
-            <button type="button" class="sort-pill" data-sort-val="letterboxd.desc">Letterboxd Highest</button>
+            <button type="button" class="sort-pill" data-sort-val="imdb.desc">IMDb ★</button>
+            <button type="button" class="sort-pill" data-sort-val="letterboxd.desc">Letterboxd</button>
             <button type="button" class="sort-pill" data-sort-val="release.desc">Newest</button>
           </div>
           <select id="sortSelect" aria-label="Full Sort Options">
-            <option value="popularity.desc">Editorial Popularity</option>
-            <option value="imdb.desc">IMDb Rating (High → Low · Rated Only)</option>
-            <option value="imdb.asc">IMDb Rating (Low → High · Rated Only)</option>
-            <option value="letterboxd.desc">Letterboxd Rating (High → Low · Rated Only)</option>
-            <option value="letterboxd.asc">Letterboxd Rating (Low → High · Rated Only)</option>
-            <option value="release.desc">Release Date (Newest First)</option>
-            <option value="release.asc">Release Date (Classic First)</option>
-            <option value="title.asc">Title (A → Z)</option>
+            <option value="popularity.desc">Sort: Editorial Popularity</option>
+            <option value="imdb.desc">Sort: IMDb (High → Low · Rated Only)</option>
+            <option value="imdb.asc">Sort: IMDb (Low → High · Rated Only)</option>
+            <option value="letterboxd.desc">Sort: Letterboxd (High → Low · Rated Only)</option>
+            <option value="letterboxd.asc">Sort: Letterboxd (Low → High · Rated Only)</option>
+            <option value="release.desc">Sort: Newest Release</option>
+            <option value="release.asc">Sort: Classic First</option>
+            <option value="title.asc">Sort: Title (A → Z)</option>
           </select>
         </div>
       </div>
@@ -454,9 +531,9 @@
             <button class="chip" data-wl-filter="towatch">To Watch</button>
             <button class="chip" data-wl-filter="watched">Watched</button>
           </div>
-          <button class="btn-outline btn-sm" id="exportWatchlistBtn">Export JSON</button>
+          <button class="btn-outline btn-sm" id="exportWatchlistBtn">Export</button>
           <label class="btn-outline btn-sm file-label">
-            Import JSON
+            Import
             <input type="file" id="importWatchlistInput" accept="application/json" hidden />
           </label>
         </div>
@@ -464,6 +541,29 @@
       <div class="media-grid" id="watchlistGrid"></div>
     </div>
   </main>
+
+  <!-- ==================== MOBILE FLOATING BOTTOM DOCK ==================== -->
+  <nav class="mobile-dock" aria-label="Mobile Navigation">
+    <button type="button" class="dock-btn active" data-mobile-nav="home">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+      <span>Home</span>
+    </button>
+    <button type="button" class="dock-btn" data-mobile-nav="discover">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+      <span>Filters</span>
+    </button>
+    <button type="button" class="dock-btn" data-mobile-nav="search">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <span>Search</span>
+    </button>
+    <button type="button" class="dock-btn" data-mobile-nav="watchlist">
+      <span class="dock-icon-wrap">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 4h12a1 1 0 0 1 1 1v16l-7-4-7 4V5a1 1 0 0 1 1-1z"/></svg>
+        <span class="dock-badge" id="mobileWatchlistBadge">0</span>
+      </span>
+      <span>Watchlist</span>
+    </button>
+  </nav>
 
   <!-- ==================== DETAIL MODAL ==================== -->
   <div class="modal-backdrop hidden" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
@@ -483,7 +583,7 @@
         </div>
         <div class="trailer-topbar-actions">
           <select id="trailerVariantSelect" class="hidden" aria-label="Select Trailer"></select>
-          <a id="trailerExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-outline btn-sm">Open on YouTube ↗</a>
+          <a id="trailerExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-outline btn-sm">YouTube ↗</a>
           <button class="modal-close-inline" id="closeTrailerModalBtn" aria-label="Close trailer">&times;</button>
         </div>
       </div>
@@ -515,10 +615,10 @@
 
         <div class="settings-group">
           <h3>API Configuration</h3>
-          <p class="helper-note">Stored privately in your browser. Leave blank to use defaults from <code>config.js</code>.</p>
+          <p class="helper-note">TMDB key is pre-configured. Enter custom keys here to override privately in your browser.</p>
           <label class="field-row">
-            <span>TMDB v3 API Key</span>
-            <input type="password" id="tmdbKeyInput" placeholder="Enter TMDB v3 API Key…" autocomplete="off" />
+            <span>TMDB v3 API Key Override</span>
+            <input type="password" id="tmdbKeyInput" placeholder="Leave blank for built-in key" autocomplete="off" />
           </label>
           <label class="field-row">
             <span>Google Gemini API Key (Optional — AI Discover &amp; Verified Ratings)</span>
@@ -533,7 +633,7 @@
     </aside>
   </div>
 
-  <!-- ==================== MEMBER AUTH MODAL (LOG IN / SIGN UP) ==================== -->
+  <!-- ==================== MEMBER AUTH MODAL ==================== -->
   <div class="modal-backdrop hidden" id="authModal" role="dialog" aria-modal="true" aria-label="Member Authentication">
     <div class="modal-dialog auth-dialog">
       <button class="modal-close-btn" id="closeAuthModalBtn" aria-label="Close">&times;</button>
